@@ -19,13 +19,15 @@ export const notFound: RequestHandler  = async (req: Request, res: Response, nex
 export const globalServerConfig: ConfigFunction = (app) => {
     app.use(morgan('tiny'));
     app.use(bodyParser.json());
-    app.use(notFound)
 }
 
 // init last middlewares for errors
 export const globalErrorConfig: ConfigFunction = (app) => {
-    app.use((err, req, res, next) => {
+    app.use(notFound);
+
+    app.use((err, req, res, _) => {
         res.status(err.status || 500);
+        console.log(err);
         res.json({
             errors: {
                 message: err.message
