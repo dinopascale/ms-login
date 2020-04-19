@@ -1,18 +1,24 @@
-import {controller, httpPost, request, response} from "inversify-express-utils";
-import express from "../../loaders/express";
-import {Request, Response} from "express";
+import {BaseHttpController, controller, httpPost } from "inversify-express-utils";
+import {inject} from "inversify";
+import {AuthService} from "../../services/auth";
+import TYPES from "../../inversify-config/types";
 
 @controller('/auth')
-export class SignInController {
-    constructor() {}
+export class SignInController extends BaseHttpController {
+
+    @inject(TYPES.AuthService) _authService: AuthService;
 
     @httpPost('/signin')
-    private async signIn(@request() req: Request, @response() res: Response): Promise<any> {
-        return res.status(201).json({status: 'ok da signgin con inversify'})
+    private async signIn(): Promise<any> {
+        const statusCode = 201;
+        const content = await this._authService.signIn();
+        return this.json(content, statusCode);
     }
 
     @httpPost('/signup')
-    private async signUp(@request() req: Request, @response() res: Response): Promise<any> {
-        return res.status(201).json({status: 'ok da signgup con inversify'})
+    private async signUp(): Promise<any> {
+        const statusCode = 201;
+        const content = await this._authService.signUp();
+        return this.json(content, statusCode);
     }
 }
