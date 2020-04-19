@@ -1,17 +1,21 @@
-import * as express from 'express';
+import 'reflect-metadata';
+import {Container} from "inversify";
+import {InversifyExpressServer} from "inversify-express-utils";
+import * as bodyParser from "body-parser";
+import './api/routes/auth'
 
-async function startServer() {
-    const app = express();
-    await require('./loaders').default({expressApp: app});
+let container = new Container();
 
-    app.listen(3000, err => {
-        if (err) {
-            console.log(err);
-            process.exit(1);
-            return;
-        }
-        console.log('Server Listening on port 3000')
-    })
-}
+let server = new InversifyExpressServer(container, null, { rootPath: '/api'});
 
-startServer();
+server.setConfig((app) => {
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+    app.use(bodyParser.json())
+})
+
+let serverInstance = server.build();
+serverInstance.listen(3000);
+
+console.log('Server Started on port 3000')
