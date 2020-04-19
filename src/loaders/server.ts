@@ -11,6 +11,7 @@ export class Server {
     constructor(
         private readonly port: number,
         private readonly configFn: ConfigFunction,
+        private readonly configErrorFn: ConfigFunction,
         private readonly routePrefix: string
     ) {
         this.container = new Container();
@@ -19,7 +20,8 @@ export class Server {
     public init(): void {
         this.container.load(buildProviderModule());
         this.server = new InversifyExpressServer(this.container, null, {rootPath: this.routePrefix})
-        this.server.setConfig(this.configFn)
+        this.server.setConfig(this.configFn);
+        this.server.setErrorConfig(this.configErrorFn);
         this.server.build().listen(this.port);
     }
 
