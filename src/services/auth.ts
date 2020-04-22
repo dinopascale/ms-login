@@ -2,21 +2,30 @@ import TYPES from "../inversify-config/types";
 import {provide} from 'inversify-binding-decorators'
 import {inject} from "inversify";
 import {Logger} from 'winston';
+import {MongoDbClient} from "./db";
+import {IUserInput} from "../interfaces/IUser";
+import {IAuthSignUp} from "../interfaces/IAuth";
+import {genSalt, hash} from 'bcrypt';
 
 @provide(TYPES.AuthService)
 export class AuthService {
-    constructor(@inject(TYPES.LoggerService) private readonly _logger: Logger) {}
+    constructor(
+        @inject(TYPES.LoggerService) private readonly _logger: Logger,
+        @inject(TYPES.MongoService) private readonly _mongoClient: MongoDbClient
+    ) {}
 
-    public signIn(): Promise<{ status: string }> {
-        return new Promise<{status: string}>((resolve, _) => {
-            this._logger.info('Ehi ciao');
-            setTimeout(() => resolve({status: 'Ehi signIn funzia'}), 500);
-        })
+    public async signIn(): Promise<void> {
     }
 
-    public signUp(): Promise<{ status: string }> {
-        return new Promise<{status: string}>((resolve, _) => {
-            setTimeout(() => resolve({status: 'Ehi signUp funzia'}), 500);
-        })
+    public async signUp(userInput: IUserInput): Promise<IAuthSignUp> {
+        try {
+            const salt = await genSalt(10);
+            this._logger.silly('Hashing password');
+            const hashedPassword = await hash(userInput.password, salt);
+            this._logger.silly('Creating user db record');
+            // const userRecord =
+        } catch(e) {
+
+        }
     }
 }

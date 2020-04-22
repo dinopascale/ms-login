@@ -1,9 +1,6 @@
 import {provide} from "inversify-binding-decorators";
 import TYPES from "../inversify-config/types";
-import {Db, MongoClient} from "mongodb";
-import {inject} from "inversify";
-import {Logger} from "winston";
-import {AuthService} from "./auth";
+import {Db, FilterQuery, MongoClient, ObjectId} from "mongodb";
 
 // helper class for connection
 class MongoDbConnection {
@@ -35,8 +32,8 @@ class MongoDbConnection {
 
 @provide(TYPES.MongoService)
 export class MongoDbClient {
-    constructor(private mongoInstance: Db) {
-        if (mongoInstance === undefined) {
+    constructor(public db: Db) {
+        if (db === undefined) {
             throw new Error('Cannot be called directly');
         }
     }
@@ -48,5 +45,19 @@ export class MongoDbClient {
         } catch (e) {
             throw new Error(e);
         }
+    }
+
+    public async find<T>(collection: string, filter: FilterQuery<T>): Promise<T[]> {
+        return this.db.collection<T>(collection).find(filter).toArray()
+    }
+
+    public async findById<T>(collection: string, id: string): Promise<T[]> {
+        const query = {_id: new ObjectId(id)}
+        return this.db.collection<T>(collection).find(query as FilterQuery<T>).limit(1).toArray()
+    }
+
+    public async insert<T = any>(collection: string, model: T): Promise<T[]> {
+        const {insertedId} = await this.db.collection(collection).insertOne(model);
+        return this.findById<T>(collection, insertedId)
     }
 }
