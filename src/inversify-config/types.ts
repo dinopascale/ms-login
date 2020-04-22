@@ -1,6 +1,7 @@
 const TYPES = {
     AuthService: Symbol.for('AuthService'),
-    LoggerService: Symbol.for('LoggerService')
+    LoggerService: Symbol.for('LoggerService'),
+    MongoService: Symbol.for('MongoService')
 }
 
 export default TYPES;
