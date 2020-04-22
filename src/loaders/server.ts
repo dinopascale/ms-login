@@ -5,6 +5,7 @@ import {buildProviderModule} from "inversify-binding-decorators";
 import TYPES from "../inversify-config/types";
 import {Logger, createLogger, format, transports, config} from 'winston';
 import {MongoDbClient} from "../services/db";
+import {AuthProvider} from "../services/auth-provider";
 
 export class Server {
 
@@ -23,7 +24,7 @@ export class Server {
     public async init(): Promise<void> {
         await this.bindExternalDep();
         this.container.load(buildProviderModule());
-        this.server = new InversifyExpressServer(this.container, null, {rootPath: this.routePrefix})
+        this.server = new InversifyExpressServer(this.container, null, {rootPath: this.routePrefix}, null, AuthProvider)
         this.server.setConfig(this.configFn);
         this.server.setErrorConfig(this.configErrorFn);
         this.server.build().listen(this.port);

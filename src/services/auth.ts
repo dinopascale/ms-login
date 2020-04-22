@@ -6,28 +6,29 @@ import {MongoDbClient} from "./db";
 import {IUser, IUserInput} from "../interfaces/IUser";
 import {IAuthSignUp} from "../interfaces/IAuth";
 import {genSalt, hash} from 'bcrypt';
-import {sign} from 'jsonwebtoken';
+import {sign, verify} from 'jsonwebtoken';
 import {FormatterService} from "./formatter";
 import {IResultError} from "../interfaces/IHelpers";
+import {UserService} from "./user";
 
 @provide(TYPES.AuthService)
 export class AuthService {
     constructor(
         @inject(TYPES.LoggerService) private readonly _logger: Logger,
-        @inject(TYPES.MongoService) private readonly _mongoClient: MongoDbClient,
+        @inject(TYPES.UserService) private readonly _user: UserService,
         @inject(TYPES.FormatterService) private readonly _formatter: FormatterService
     ) {}
 
     public async signIn(): Promise<void> {
-    }
 
+    }
     public async signUp(userInput: IUserInput): Promise<IAuthSignUp | IResultError> {
         try {
             const salt = await genSalt(10);
             this._logger.silly('Hashing password');
             const hashedPassword = await hash(userInput.password, salt);
             this._logger.silly('Creating user db record');
-            const userRecord = await this._mongoClient.insert<IUser>('user', {
+            const userRecord = await this._user.createUser({
                 ...userInput,
                 salt: salt.toString(),
                 password: hashedPassword
@@ -46,7 +47,16 @@ export class AuthService {
             throw e;
         }
     }
-
+    public async getUserByToken(token: string): Promise<IUser> {
+        try {
+            const {_id} = await verify(token, 'supersecret') as {_id: string, name: string, expire: number};
+            return this._user.getUserById(_id);
+        }
+        catch (e) {
+            this._logger.error('Error in Verify Token' + e);
+            throw e;
+        }
+    }
     private generateToken(user: IUser): string {
         const today = new Date();
         const exp = new Date(today);
@@ -62,4 +72,5 @@ export class AuthService {
             'supersecret'
         )
     }
+
 }
