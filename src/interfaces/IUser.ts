@@ -7,9 +7,14 @@ export interface IUser {
     salt: string;
 }
 
-export interface IUserInput {
+export interface IUserInputSignUp {
     name: string;
     surname: string;
+    email: string;
+    password: string;
+}
+
+export interface IUserInputSignIn {
     email: string;
     password: string;
 }

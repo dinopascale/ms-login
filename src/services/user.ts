@@ -12,11 +12,12 @@ export class UserService {
         @inject(TYPES.MongoService) private readonly _mongoClient: MongoDbClient
     ) {}
 
+    // this should be not here probably
     public async createUser(user: IUser): Promise<IUser> {
         return this._mongoClient.insert<IUser>('user', user);
     }
 
-    public async getUserById(userId: string): Promise<IUser> {
-        return this._mongoClient.findById<IUser>('user', userId);
+    public async getUser(email: string) {
+        return this._mongoClient.findOne<IUser>('user', {email});
     }
 }
