@@ -3,7 +3,8 @@ import {interfaces, InversifyExpressServer} from "inversify-express-utils";
 import ConfigFunction = interfaces.ConfigFunction;
 import {buildProviderModule} from "inversify-binding-decorators";
 import TYPES from "../inversify-config/types";
-import {Logger, createLogger, format, transports} from 'winston';
+import {Logger, createLogger, format, transports, config} from 'winston';
+import {MongoDbClient} from "../services/db";
 
 export class Server {
 
@@ -19,8 +20,8 @@ export class Server {
         this.container = new Container();
     }
 
-    public init(): void {
-        this.bindExternalDep();
+    public async init(): Promise<void> {
+        await this.bindExternalDep();
         this.container.load(buildProviderModule());
         this.server = new InversifyExpressServer(this.container, null, {rootPath: this.routePrefix})
         this.server.setConfig(this.configFn);
@@ -28,12 +29,14 @@ export class Server {
         this.server.build().listen(this.port);
     }
 
-    private bindExternalDep(): void {
+    private async bindExternalDep(): Promise<void> {
         // @TODO externalize with constructor class
         this.container.bind<Logger>(TYPES.LoggerService).toConstantValue(createLogger({
+            level: 'silly',
+            levels: config.npm.levels,
             transports: [
                 new transports.Console({
-                    level: 'debug',
+                    // level: 'debug',
                     format: format.combine(
                         format.colorize(),
                         format.simple()
@@ -41,6 +44,7 @@ export class Server {
                 })
             ]
         }))
+        this.container.bind<MongoDbClient>(TYPES.MongoService).toConstantValue(await MongoDbClient.build())
     }
 
 }

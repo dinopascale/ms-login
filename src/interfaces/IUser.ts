@@ -1,5 +1,5 @@
 export interface IUser {
-    _id: string;
+    _id?: string;
     name: string;
     surname: string;
     email: string;
@@ -9,6 +9,7 @@ export interface IUser {
 
 export interface IUserInput {
     name: string;
+    surname: string;
     email: string;
     password: string;
 }
